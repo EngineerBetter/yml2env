@@ -11,6 +11,7 @@ import (
 
 var _ = Describe("yml2env", func() {
 	var cliPath string
+	usage := "yml2env <YAML file> <command>"
 
 	BeforeSuite(func() {
 		var err error
@@ -27,7 +28,7 @@ var _ = Describe("yml2env", func() {
 		session, err := Start(command, GinkgoWriter, GinkgoWriter)
 		Ω(err).ShouldNot(HaveOccurred())
 		Eventually(session).Should(Exit(1))
-		Ω(session.Err).Should(Say("yml2env <YAML file> <command>"))
+		Ω(session.Err).Should(Say(usage))
 	})
 
 	It("requires a the YAML file to exist", func() {
@@ -44,7 +45,7 @@ var _ = Describe("yml2env", func() {
 		session, err := Start(command, GinkgoWriter, GinkgoWriter)
 		Ω(err).ShouldNot(HaveOccurred())
 		Eventually(session).Should(Exit(1))
-		Ω(session.Err).Should(Say("yml2env <YAML file> <command>"))
+		Ω(session.Err).Should(Say(usage))
 	})
 
 	It("invokes the given command passing env vars from the YAML file", func() {
