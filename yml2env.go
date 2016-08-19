@@ -30,26 +30,47 @@ func main() {
 		os.Exit(1)
 	}
 
-	//Load YAML
+	bytes := loadYaml(yamlPath)
+	mapSlice := parseYaml(bytes)
+	envVars := os.Environ()
+	envVars = addUppercaseKeysToEnv(mapSlice, envVars)
+
+	run(envVars, args[1:])
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+
+	if err != nil && os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
+func loadYaml(yamlPath string) []byte {
 	bytes, err := ioutil.ReadFile(yamlPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Could not read "+yamlPath)
 	}
+	return bytes
+}
 
-	//Get as map
+func parseYaml(bytes []byte) yaml.MapSlice {
 	vars := yaml.MapSlice{}
-	err = yaml.Unmarshal([]byte(bytes), &vars)
+	err := yaml.Unmarshal([]byte(bytes), &vars)
 
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Could not parse "+yamlPath)
+		fmt.Fprintln(os.Stderr, "Could not parse YAML")
 		os.Exit(1)
 	}
 
-	envVars := os.Environ()
+	return vars
+}
 
-	//uppercase keys
-	for i := 0; i < len(vars); i++ {
-		item := vars[i]
+func addUppercaseKeysToEnv(mapSlice yaml.MapSlice, envVars []string) []string {
+	for i := 0; i < len(mapSlice); i++ {
+		item := mapSlice[i]
 
 		if key, ok := item.Key.(string); ok {
 			key := strings.ToUpper(key)
@@ -66,17 +87,7 @@ func main() {
 		}
 	}
 
-	run(envVars, args[1:])
-}
-
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-
-	if err != nil && os.IsNotExist(err) {
-		return false
-	}
-
-	return true
+	return envVars
 }
 
 func commandWithEnv(envVars []string, args ...string) *exec.Cmd {
