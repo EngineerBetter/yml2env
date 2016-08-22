@@ -1,0 +1,18 @@
+---
+jobs:
+- name: test
+  public: true
+  plan:
+  - get: master
+    trigger: true
+  - task: test
+    file: master/ci/tasks/test/task.yml
+    input_mapping:
+      yml2env: master
+
+resources:
+- name: master
+  type: git
+  source:
+    uri: https://github.com/EngineerBetter/yml2env.git
+    branch: master
