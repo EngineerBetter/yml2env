@@ -15,7 +15,7 @@ jobs:
     trigger: false
     passed: [test]
   - task: build
-    file: yml2env/ci/tasks/build/task.yml
+    file: yml2env/ci/tasks/release/task.yml
   - put: yml2env-release
     params:
       name: yml2env/version
