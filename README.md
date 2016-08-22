@@ -38,6 +38,7 @@ go get github.com/EngineerBetter/yml2env
 
 1. Download [a release](https://github.com/EngineerBetter/yml2env/releases)
 1. Move to `$PATH` and rename to `yml2env`
+1. `chmod +x yml2env`
 
 ## Testing
 
