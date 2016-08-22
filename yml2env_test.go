@@ -49,7 +49,7 @@ var _ = Describe("yml2env", func() {
 	})
 
 	It("invokes the given command passing env vars from the YAML file", func() {
-		command := exec.Command(cliPath, "fixtures/vars.yml", "echo $VAR_FROM_YAML")
+		command := exec.Command(cliPath, "fixtures/vars.yml", "fixtures/script.sh")
 		session, err := Start(command, GinkgoWriter, GinkgoWriter)
 		Ω(err).ShouldNot(HaveOccurred())
 		Eventually(session).Should(Exit(0))

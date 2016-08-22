@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/EngineerBetter/yml2env/env"
 	"gopkg.in/yaml.v2"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -18,7 +16,7 @@ var usage = "yml2env <YAML file> <command>"
 func main() {
 	args := os.Args
 
-	if len(args) != 3 {
+	if len(args) < 3 {
 		fmt.Fprintln(os.Stderr, usage)
 		os.Exit(1)
 	}
@@ -35,7 +33,11 @@ func main() {
 	envVars := os.Environ()
 	envVars = addUppercaseKeysToEnv(mapSlice, envVars)
 
-	run(envVars, args[1:])
+	err, _ := run(envVars, args[2:])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
 
 func fileExists(path string) bool {
@@ -75,8 +77,7 @@ func addUppercaseKeysToEnv(mapSlice yaml.MapSlice, envVars []string) []string {
 		if key, ok := item.Key.(string); ok {
 			key := strings.ToUpper(key)
 			if value, ok := item.Value.(string); ok {
-				env.Set(key, value, envVars)
-				fmt.Println(key, value)
+				envVars = env.Set(key, value, envVars)
 			} else {
 				fmt.Fprintln(os.Stderr, "YAML invalid")
 				os.Exit(1)
@@ -96,25 +97,21 @@ func commandWithEnv(envVars []string, args ...string) *exec.Cmd {
 	return cmd
 }
 
-func run(envVars []string, args []string) (error, int, string) {
+func run(envVars []string, args []string) (error, int) {
 	cmd := commandWithEnv(envVars, args...)
 
-	buffer := bytes.NewBufferString("")
-	multiWriter := io.MultiWriter(os.Stdout, buffer)
-
 	cmd.Stdin = os.Stdin
-	cmd.Stdout = multiWriter
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	err := cmd.Start()
 
 	if err != nil {
-		return err, -1, ""
+		return err, -1
 	}
 
 	err = cmd.Wait()
-	output := buffer.String()
-	return nil, determineExitCode(cmd, err), output
+	return nil, determineExitCode(cmd, err)
 }
 
 func determineExitCode(cmd *exec.Cmd, err error) (exitCode int) {
