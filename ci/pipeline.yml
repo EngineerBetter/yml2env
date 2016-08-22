@@ -8,9 +8,31 @@ jobs:
   - task: test
     file: yml2env/ci/tasks/test/task.yml
 
+- name: release
+  public: true
+  plan:
+  - get: yml2env
+    trigger: false
+    passed: [test]
+  - task: build
+    file: yml2env/ci/tasks/build/task.yml
+  - put: yml2env-release
+    params:
+      name: yml2env/version
+      tag: yml2env/version
+      tag_prefix: v
+      globs: [build/yml2env*]
+
 resources:
 - name: yml2env
   type: git
   source:
     uri: https://github.com/EngineerBetter/yml2env.git
     branch: master
+
+- name: yml2env-release
+  type: github-release
+  source:
+    user: EngineerBetter
+    repository: yml2env
+    access_token: {{github-access-token}}
