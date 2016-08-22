@@ -3,15 +3,13 @@ jobs:
 - name: test
   public: true
   plan:
-  - get: master
+  - get: yml2env
     trigger: true
   - task: test
-    file: master/ci/tasks/test/task.yml
-    input_mapping:
-      yml2env: master
+    file: yml2env/ci/tasks/test/task.yml
 
 resources:
-- name: master
+- name: yml2env
   type: git
   source:
     uri: https://github.com/EngineerBetter/yml2env.git
