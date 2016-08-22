@@ -1,7 +1,7 @@
 package env_test
 
 import (
-	. "github.com/EngineerBetter/cf-plex/env"
+	. "github.com/EngineerBetter/yml2env/env"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
