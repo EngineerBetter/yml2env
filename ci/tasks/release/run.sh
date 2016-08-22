@@ -12,4 +12,4 @@ GOARCH=amd64 GOOS=linux go build -ldflags '-extldflags "-static"' -o build/yml2e
 echo "Building 32-bit Windows"
 GOARCH=386 GOOS=windows go build -o build/yml2env_win32.exe github.com/EngineerBetter/yml2env
 echo "Building 64-bit Windows"
-GOARCH=amd64 GOOS=windows go build -o build/yml2envwinx64.exe github.com/EngineerBetter/yml2env
+GOARCH=amd64 GOOS=windows go build -o build/yml2env_winx64.exe github.com/EngineerBetter/yml2env
