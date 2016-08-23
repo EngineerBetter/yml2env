@@ -12,7 +12,7 @@ It's quite handy for using Concourse `--load-vars-from` files when running local
 
 ## Example
 
-Given a YAML file:
+Given a YAML file stored in `ci/vars/local.yml`:
 
 ```
 ---
