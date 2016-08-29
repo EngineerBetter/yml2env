@@ -23,16 +23,57 @@ jobs:
       tag_prefix: v
       globs: [build/yml2env*]
 
+- name: test-prs
+  plan:
+  - get: pull-request
+    trigger: true
+    version: every
+  - put: pull-request
+    params:
+      path: pull-request
+      status: pending
+  - task: test
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: cfmobile/ginkgo
+      inputs:
+      - name: pull-request
+        path: gopath/src/github.com/EngineerBetter/yml2env
+      run:
+        path: gopath/src/github.com/EngineerBetter/yml2env/ci/tasks/test/run.sh
+    on_failure:
+      put: pull-request
+      params:
+        path: pull-request
+        status: failure
+  - put: pull-request
+    params:
+      path: pull-request
+      status: success
+
 resources:
 - name: yml2env
   type: git
   source:
     uri: https://github.com/EngineerBetter/yml2env.git
     branch: master
-
+- name: pull-request
+  type: pull-request
+  source:
+    access_token: {{github-access-token}}
+    repo: EngineerBetter/yml2env
 - name: yml2env-release
   type: github-release
   source:
     user: EngineerBetter
     repository: yml2env
     access_token: {{github-access-token}}
+
+resource_types:
+- name: pull-request
+  type: docker-image
+  source:
+    repository: jtarchie/pr
