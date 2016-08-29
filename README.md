@@ -23,7 +23,7 @@ cf_password: whevsmate
 ...running `yml2env ci/vars/local.yml fly execute ci/tasks/system-tests.yml` is equivalent to running
 
 ```
-CF_USERNAME=admin CF_PASSWORD=admin fly execute ci/tasks/system-tests.yml
+CF_USERNAME=admin CF_PASSWORD=whevsmate fly execute ci/tasks/system-tests.yml
 ```
 
 ## Installation
