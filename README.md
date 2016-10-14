@@ -1,6 +1,6 @@
 # yml2env
 
-![Build Status](http://ci.engineerbetter.com/api/v1/pipelines/yml2env/jobs/test/badge)
+![Build Status](http://ci.engineerbetter.com/api/v1/teams/main/pipelines/yml2env/jobs/test/badge)
 
 Executes a command with environment variables taken from a YAML file.
 
