@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/EngineerBetter/yml2env/env"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/EngineerBetter/yml2env/env"
+	"gopkg.in/yaml.v2"
 )
 
 var usage = "yml2env <YAML file> <command>"
@@ -70,12 +72,22 @@ func parseYaml(bytes []byte) yaml.MapSlice {
 	return vars
 }
 
+func valueToString(item yaml.MapItem) yaml.MapItem {
+	if value, ok := item.Value.(bool); ok {
+		item.Value = strconv.FormatBool(value)
+	} else if value, ok := item.Value.(int); ok {
+		item.Value = strconv.Itoa(value)
+	}
+	return item
+}
+
 func addUppercaseKeysToEnv(mapSlice yaml.MapSlice, envVars []string) []string {
 	for i := 0; i < len(mapSlice); i++ {
 		item := mapSlice[i]
 
 		if key, ok := item.Key.(string); ok {
 			key := strings.ToUpper(key)
+			item = valueToString(item)
 			if value, ok := item.Value.(string); ok {
 				envVars = env.Set(key, value, envVars)
 			} else {
