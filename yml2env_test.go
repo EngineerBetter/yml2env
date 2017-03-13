@@ -55,4 +55,20 @@ var _ = Describe("yml2env", func() {
 		Eventually(session).Should(Exit(0))
 		Ω(session).Should(Say("value from yaml"))
 	})
+
+	It("invokes the given command passing boolean env vars from the YAML file", func() {
+		command := exec.Command(cliPath, "fixtures/boolean.yml", "fixtures/script.sh")
+		session, err := Start(command, GinkgoWriter, GinkgoWriter)
+		Ω(err).ShouldNot(HaveOccurred())
+		Eventually(session).Should(Exit(0))
+		Ω(session).Should(Say("true"))
+	})
+
+	It("invokes the given command passing integer env vars from the YAML file", func() {
+		command := exec.Command(cliPath, "fixtures/integer.yml", "fixtures/script.sh")
+		session, err := Start(command, GinkgoWriter, GinkgoWriter)
+		Ω(err).ShouldNot(HaveOccurred())
+		Eventually(session).Should(Exit(0))
+		Ω(session).Should(Say("42"))
+	})
 })
