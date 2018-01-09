@@ -63,14 +63,14 @@ resources:
 - name: pull-request
   type: pull-request
   source:
-    access_token: {{github_access_token}}
+    access_token: ((github_access_token))
     repo: EngineerBetter/yml2env
 - name: yml2env-release
   type: github-release
   source:
     user: EngineerBetter
     repository: yml2env
-    access_token: {{github_access_token}}
+    access_token: ((github_access_token))
 
 resource_types:
 - name: pull-request
