@@ -11,7 +11,7 @@ import (
 
 var _ = Describe("yml2env", func() {
 	var cliPath string
-	usage := "yml2env <YAML file> <command>"
+	usage := "yml2env <YAML file> \\[<command> | --env\\]"
 
 	BeforeSuite(func() {
 		var err error
@@ -40,35 +40,55 @@ var _ = Describe("yml2env", func() {
 		Ω(session.Err).ShouldNot(Say("foo"))
 	})
 
-	It("requires a command to invoke", func() {
-		command := exec.Command(cliPath, "fixtures/vars.yml")
-		session, err := Start(command, GinkgoWriter, GinkgoWriter)
-		Ω(err).ShouldNot(HaveOccurred())
-		Eventually(session).Should(Exit(1))
-		Ω(session.Err).Should(Say(usage))
+	Describe("running a command", func() {
+		It("requires a command to invoke", func() {
+			command := exec.Command(cliPath, "fixtures/vars.yml")
+			session, err := Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(1))
+			Ω(session.Err).Should(Say(usage))
+		})
+
+		It("invokes the given command passing env vars from the YAML file", func() {
+			command := exec.Command(cliPath, "fixtures/vars.yml", "fixtures/script.sh")
+			session, err := Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+			Ω(session).Should(Say("value from yaml"))
+		})
+
+		It("invokes the given command passing boolean env vars from the YAML file", func() {
+			command := exec.Command(cliPath, "fixtures/boolean.yml", "fixtures/script.sh")
+			session, err := Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+			Ω(session).Should(Say("true"))
+		})
+
+		It("invokes the given command passing integer env vars from the YAML file", func() {
+			command := exec.Command(cliPath, "fixtures/integer.yml", "fixtures/script.sh")
+			session, err := Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+			Ω(session).Should(Say("42"))
+		})
 	})
 
-	It("invokes the given command passing env vars from the YAML file", func() {
-		command := exec.Command(cliPath, "fixtures/vars.yml", "fixtures/script.sh")
-		session, err := Start(command, GinkgoWriter, GinkgoWriter)
-		Ω(err).ShouldNot(HaveOccurred())
-		Eventually(session).Should(Exit(0))
-		Ω(session).Should(Say("value from yaml"))
-	})
+	Describe("printing out exports", func() {
+		It("does not accept a subcommand", func() {
+			command := exec.Command(cliPath, "fixtures/vars.yml", "--eval", "fixtures/script.sh")
+			session, err := Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(1))
+			Ω(session.Err).Should(Say(usage))
+		})
 
-	It("invokes the given command passing boolean env vars from the YAML file", func() {
-		command := exec.Command(cliPath, "fixtures/boolean.yml", "fixtures/script.sh")
-		session, err := Start(command, GinkgoWriter, GinkgoWriter)
-		Ω(err).ShouldNot(HaveOccurred())
-		Eventually(session).Should(Exit(0))
-		Ω(session).Should(Say("true"))
-	})
-
-	It("invokes the given command passing integer env vars from the YAML file", func() {
-		command := exec.Command(cliPath, "fixtures/integer.yml", "fixtures/script.sh")
-		session, err := Start(command, GinkgoWriter, GinkgoWriter)
-		Ω(err).ShouldNot(HaveOccurred())
-		Eventually(session).Should(Exit(0))
-		Ω(session).Should(Say("42"))
+		It("prints out an export for each var", func() {
+			command := exec.Command(cliPath, "fixtures/vars.yml", "--eval")
+			session, err := Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+			Ω(session).Should(Say("export 'VAR_FROM_YAML=value from yaml'"))
+		})
 	})
 })

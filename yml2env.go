@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var usage = "yml2env <YAML file> <command>"
+var usage = "yml2env <YAML file> [<command> | --env]"
 
 func main() {
 	args := os.Args
@@ -32,13 +32,24 @@ func main() {
 
 	bytes := loadYaml(yamlPath)
 	mapSlice := parseYaml(bytes)
+	mapSlice = uppercaseKeys(mapSlice)
 	envVars := os.Environ()
-	envVars = addUppercaseKeysToEnv(mapSlice, envVars)
+	envVars = addToEnv(mapSlice, envVars)
 
-	err, _ := run(envVars, args[2:])
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	if args[2] == "--eval" {
+		if len(args) > 3 {
+			fmt.Fprintln(os.Stderr, usage)
+			os.Exit(1)
+		}
+
+		printExports(mapSlice)
+		os.Exit(0)
+	} else {
+		err, _ := run(envVars, args[2:])
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	}
 }
 
@@ -81,7 +92,7 @@ func valueToString(item yaml.MapItem) yaml.MapItem {
 	return item
 }
 
-func addUppercaseKeysToEnv(mapSlice yaml.MapSlice, envVars []string) []string {
+func uppercaseKeys(mapSlice yaml.MapSlice) yaml.MapSlice {
 	for i := 0; i < len(mapSlice); i++ {
 		item := mapSlice[i]
 
@@ -89,7 +100,7 @@ func addUppercaseKeysToEnv(mapSlice yaml.MapSlice, envVars []string) []string {
 			key := strings.ToUpper(key)
 			item = valueToString(item)
 			if value, ok := item.Value.(string); ok {
-				envVars = env.Set(key, value, envVars)
+				mapSlice[i] = yaml.MapItem{Key: key, Value: value}
 			} else {
 				fmt.Fprintln(os.Stderr, "YAML invalid")
 				os.Exit(1)
@@ -98,6 +109,19 @@ func addUppercaseKeysToEnv(mapSlice yaml.MapSlice, envVars []string) []string {
 			fmt.Fprintln(os.Stderr, "YAML invalid")
 			os.Exit(1)
 		}
+	}
+
+	return mapSlice
+}
+
+func addToEnv(mapSlice yaml.MapSlice, envVars []string) []string {
+	for i := 0; i < len(mapSlice); i++ {
+		item := mapSlice[i]
+
+		key, _ := item.Key.(string)
+		item = valueToString(item)
+		value, _ := item.Value.(string)
+		envVars = env.Set(key, value, envVars)
 	}
 
 	return envVars
@@ -139,4 +163,16 @@ func determineExitCode(cmd *exec.Cmd, err error) (exitCode int) {
 	}
 
 	return
+}
+
+func printExports(mapSlice yaml.MapSlice) {
+	for i := 0; i < len(mapSlice); i++ {
+		item := mapSlice[i]
+
+		key, _ := item.Key.(string)
+		key = strings.ToUpper(key)
+		item = valueToString(item)
+		value, _ := item.Value.(string)
+		fmt.Printf("export '%s=%s'\n", key, value)
+	}
 }
