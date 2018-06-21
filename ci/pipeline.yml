@@ -33,17 +33,8 @@ jobs:
       path: pull-request
       status: pending
   - task: test
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: cfmobile/ginkgo
-      inputs:
-      - name: pull-request
-        path: gopath/src/github.com/EngineerBetter/yml2env
-      run:
-        path: gopath/src/github.com/EngineerBetter/yml2env/ci/tasks/test/run.sh
+    file: pull-request/ci/tasks/test/task.yml
+    input_mapping: {yml2env: pull-request}
     on_failure:
       put: pull-request
       params:
