@@ -1,6 +1,8 @@
 package main_test
 
 import (
+	"os"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -11,10 +13,14 @@ import (
 
 var _ = Describe("yml2env", func() {
 	var cliPath string
+	var version string
 	usage := "yml2env <YAML file> \\[<command> | --env\\]"
 
 	BeforeSuite(func() {
 		var err error
+		data, err := os.ReadFile("version")
+		version = string(data)
+		Ω(err).ShouldNot(HaveOccurred())
 		cliPath, err = Build("github.com/EngineerBetter/yml2env")
 		Ω(err).ShouldNot(HaveOccurred())
 	})
@@ -89,6 +95,24 @@ var _ = Describe("yml2env", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Eventually(session).Should(Exit(0))
 			Ω(session).Should(Say("export 'VAR_FROM_YAML=value from yaml'"))
+		})
+	})
+
+	Describe("checking the version", func() {
+		It("returns the version in the version file when --version flag is provided", func() {
+			command := exec.Command(cliPath, "--version")
+			session, err := Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+			Ω(session).Should(Say(version))
+		})
+
+		It("returns the version in the version file when -v flag is provided", func() {
+			command := exec.Command(cliPath, "-v")
+			session, err := Start(command, GinkgoWriter, GinkgoWriter)
+			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(session).Should(Exit(0))
+			Ω(session).Should(Say(version))
 		})
 	})
 })

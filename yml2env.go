@@ -18,6 +18,11 @@ var usage = "yml2env <YAML file> [<command> | --env]"
 func main() {
 	args := os.Args
 
+	if isVersionCMD(args) {
+		fmt.Fprintln(os.Stdout, version())
+		os.Exit(0)
+	}
+
 	if len(args) < 3 {
 		fmt.Fprintln(os.Stderr, usage)
 		os.Exit(1)
@@ -175,4 +180,19 @@ func printExports(mapSlice yaml.MapSlice) {
 		value, _ := item.Value.(string)
 		fmt.Printf("export '%s=%s'\n", key, value)
 	}
+}
+
+func version() string {
+	data, err := os.ReadFile("version")
+	if err != nil {
+		fmt.Printf("unable to retrieve version: %s", err)
+	}
+	return string(data)
+}
+
+func isVersionCMD(args []string) bool {
+	if len(args) > 1 && (args[1] == "--version" || args[1] == "-v") {
+		return true
+	}
+	return false
 }
