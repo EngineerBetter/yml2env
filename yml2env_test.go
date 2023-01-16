@@ -31,7 +31,7 @@ var _ = Describe("yml2env", func() {
 		Ω(session.Err).Should(Say(usage))
 	})
 
-	It("requires a the YAML file to exist", func() {
+	It("requires the YAML file to exist", func() {
 		command := exec.Command(cliPath, "no/such/file.yml", "echo foo")
 		session, err := Start(command, GinkgoWriter, GinkgoWriter)
 		Ω(err).ShouldNot(HaveOccurred())
