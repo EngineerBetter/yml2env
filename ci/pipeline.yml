@@ -27,6 +27,7 @@ jobs:
   - get: cfops-image
   - task: build
     image: cfops-image
+    passed: [test]
     file: yml2env/ci/tasks/release/task.yml
   - put: yml2env-release
     params:
