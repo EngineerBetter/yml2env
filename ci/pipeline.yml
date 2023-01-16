@@ -1,10 +1,20 @@
 ---
 jobs:
-- name: test
-  public: true
+- name: set-pipeline
+  serial: true
   plan:
   - get: yml2env
     trigger: true
+  - set_pipeline: yml2env
+    file: yml2env/ci/pipeline.yml
+
+- name: test
+  public: true
+  plan:
+  - get: cfops-image
+  - get: yml2env
+    trigger: true
+    passed: [set-pipeline]
   - task: test
     file: yml2env/ci/tasks/test/task.yml
 
@@ -14,7 +24,9 @@ jobs:
   - get: yml2env
     trigger: false
     passed: [test]
+  - get: cfops-image
   - task: build
+    image: cfops-image
     file: yml2env/ci/tasks/release/task.yml
   - put: yml2env-release
     params:
@@ -25,6 +37,7 @@ jobs:
 
 - name: test-prs
   plan:
+  - get: cfops-image
   - get: pull-request
     trigger: true
     version: every
@@ -33,12 +46,9 @@ jobs:
       path: pull-request
       status: pending
   - task: test
+    image: cfops-image
     config:
       platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: cfmobile/ginkgo
       inputs:
       - name: pull-request
         path: gopath/src/github.com/EngineerBetter/yml2env
@@ -71,6 +81,13 @@ resources:
     user: EngineerBetter
     repository: yml2env
     access_token: ((github_access_token))
+- name: cfops-image
+  type: docker-image
+  icon: docker
+  source:
+    repository: engineerbetter/cf-ops
+    username: ((dockerhub_user))
+    password: ((dockerhub_password))
 
 resource_types:
 - name: pull-request
