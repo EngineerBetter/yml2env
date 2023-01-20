@@ -2,8 +2,9 @@ platform: linux
 
 inputs:
 - name: yml2env
-  path: gopath/src/github.com/EngineerBetter/yml2env
+
 run:
-  path: gopath/src/github.com/EngineerBetter/yml2env/ci/tasks/release/run.sh
+  path: yml2env/ci/tasks/release/run.sh
+
 outputs:
 - name: build
