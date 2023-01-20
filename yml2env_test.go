@@ -3,7 +3,7 @@ package main_test
 import (
 	"os"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
@@ -11,23 +11,24 @@ import (
 	"os/exec"
 )
 
+var cliPath string
+var version string
+
+var _ = BeforeSuite(func() {
+	var err error
+	data, err := os.ReadFile("version")
+	version = string(data)
+	Ω(err).ShouldNot(HaveOccurred())
+	cliPath, err = Build("github.com/EngineerBetter/yml2env")
+	Ω(err).ShouldNot(HaveOccurred())
+})
+
+var _ = AfterSuite(func() {
+	CleanupBuildArtifacts()
+})
+
 var _ = Describe("yml2env", func() {
-	var cliPath string
-	var version string
 	usage := "yml2env <YAML file> \\[<command> | --env\\]"
-
-	BeforeSuite(func() {
-		var err error
-		data, err := os.ReadFile("version")
-		version = string(data)
-		Ω(err).ShouldNot(HaveOccurred())
-		cliPath, err = Build("github.com/EngineerBetter/yml2env")
-		Ω(err).ShouldNot(HaveOccurred())
-	})
-
-	AfterSuite(func() {
-		CleanupBuildArtifacts()
-	})
 
 	It("requires a YAML file argument", func() {
 		command := exec.Command(cliPath)
